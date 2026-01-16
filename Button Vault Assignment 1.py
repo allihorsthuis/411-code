@@ -19,17 +19,20 @@ while True:
     
     if button.value() == 0:
        start_time = time.ticks_ms()
-        while button.value() == 0:
+       
+       while button.value() == 0:
             time.sleep_ms(10)
             
         press_duration = time.ticks_diff(time.ticks_ms(), start_time)
         
-         if press_duration < SHORT_PRESS_MS:
+        if press_duration < SHORT_PRESS_MS:
             entered += "S"
             print("S")
         elif press_duration >= LONG_PRESS_MS:
             entered += "L"
             print("L")
+        if not CODE.startswith(entered): #this may or may not be needed
+            entered = ""
         if entered == CODE:
             print("unlocked")
             entered = ""
