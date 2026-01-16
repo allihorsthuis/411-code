@@ -15,10 +15,11 @@ while True:
        start_time = time.ticks_ms()
         while button.value() == 0:
             time.sleep_ms(10)
-            
-        press_duration = time.ticks_diff(times.ticks_ms(), start_time)
+   #might have to add a line with end time at button =1 idk. then take diff.          
+        press_duration = time.ticks_diff(time.ticks_ms(), start_time)
         
         if press_duration < SHORT_PRESS_MS:
             print ('short')
-        elif press_duration >= LONG_PRESS_MS
+        elif press_duration >= LONG_PRESS_MS:
             print('long')
+        time.sleep_ms(300)
