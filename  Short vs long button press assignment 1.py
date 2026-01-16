@@ -12,14 +12,13 @@ SHORT_PRESS_MS = 500
 while True:
     
     if button.value() == 0:
-       
-        start_time = time.ticks_ms()
+       start_time = time.ticks_ms()
         while button.value() == 0:
             time.sleep_ms(10)
             
         press_duration = time.ticks_diff(times.ticks_ms(), start_time)
         
-        if press_duration >= LONG_PRESS_MS:
-            print ('long')
-        elif press_duration < SHORT_PRESS_MS
-            print('short')
+        if press_duration < SHORT_PRESS_MS:
+            print ('short')
+        elif press_duration >= LONG_PRESS_MS
+            print('long')
