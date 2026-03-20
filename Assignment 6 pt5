@@ -1,0 +1,114 @@
+import time
+from collections import deque
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+import bt_python_api
+
+
+# Bluetooth setup (FIXED)
+
+bt = bt_python_api.BLEClient()
+
+# connect to ESP32
+bt.connect()
+
+# Data storage
+
+MAX_POINTS = 200
+
+x_data = deque(maxlen=MAX_POINTS)
+reading_data = deque(maxlen=MAX_POINTS)
+min_data = deque(maxlen=MAX_POINTS)
+max_data = deque(maxlen=MAX_POINTS)
+
+start_time = time.time()
+
+
+# Plot setup
+
+fig, ax = plt.subplots()
+
+line_reading, = ax.plot([], [], label="Reading")
+line_min, = ax.plot([], [], label="Min")
+line_max, = ax.plot([], [], label="Max")
+
+ax.set_title("Light Sensor Data (Bluetooth)")
+ax.set_xlabel("Time (s)")
+ax.set_ylabel("ADC Value")
+ax.legend()
+ax.grid(True)
+
+
+# Parse incoming data
+
+def parse_line(line):
+    try:
+        parts = line.strip().split(",")
+
+        if len(parts) != 3:
+            return None
+
+        mn = int(parts[0])
+        mx = int(parts[1])
+        rd = int(parts[2])
+
+        return mn, mx, rd
+
+    except:
+        return None
+
+# Update function
+
+def update(frame):
+    for _ in range(10):
+        try:
+            raw = bt.readline()   # if this errors, change to bt.read()
+        except:
+            break
+
+        if raw is None:
+            break
+
+        if isinstance(raw, bytes):
+            raw = raw.decode("utf-8", errors="ignore")
+
+        parsed = parse_line(raw)
+        if parsed is None:
+            continue
+
+        mn, mx, rd = parsed
+        t = time.time() - start_time
+
+        x_data.append(t)
+        min_data.append(mn)
+        max_data.append(mx)
+        reading_data.append(rd)
+
+    if len(x_data) == 0:
+        return line_reading, line_min, line_max
+
+    # update lines
+    line_reading.set_data(x_data, reading_data)
+    line_min.set_data(x_data, min_data)
+    line_max.set_data(x_data, max_data)
+
+    # x-axis
+    ax.set_xlim(min(x_data), max(x_data) + 0.1)
+
+    # y-axis
+    all_y = list(reading_data) + list(min_data) + list(max_data)
+    y_min = min(all_y) - 50
+    y_max = max(all_y) + 50
+
+    if y_min == y_max:
+        y_max += 1
+
+    ax.set_ylim(y_min, y_max)
+
+    return line_reading, line_min, line_max
+
+# =====================================
+# Run plot
+# =====================================
+ani = FuncAnimation(fig, update, interval=100)
+plt.show()
